@@ -1,0 +1,68 @@
+{
+  "mode": "Indexed",
+  "policyRule": {
+    "if": {
+      "allOf": [
+        {
+          "field": "type",
+          "notequals": "Microsoft.Resources/subscriptions/resourceGroups"
+        },
+        {
+          "anyOf": [
+            {
+              "count": {
+                "value": [
+                  "ai",
+                  "kv",
+                  "sql",
+                  "app",
+                  "search"
+                ],
+                "name": "pattern",
+                "where": {
+                  "anyOf": [
+                    {
+                      "value": "[split(field('name'), '-')[0]]",
+                      "like": "[current('pattern')]"
+                    },
+                    {
+                      "value": "[count(split(field('name'), '-'))]",
+                      "equals": 1
+                    }
+                  ]
+                }
+              },
+              "notEquals": 1
+            },
+            {
+              "count": {
+                "value": [
+                  "dev",
+                  "prod"
+                ],
+                "name": "pattern",
+                "where": {
+                  "anyOf": [
+                    {
+                      "value": "[last(split(field('name'), '-'))]",
+                      "like": "[current('pattern')]"
+                    },
+                    {
+                      "value": "[count(split(field('name'), '-'))]",
+                      "equals": 1
+                    }
+                  ]
+                }
+              },
+              "notEquals": 1
+            }
+          ]
+        }
+      ]
+    },
+    "then": {
+      "effect": "deny"
+    },    
+    "parameters": {}
+  }
+}

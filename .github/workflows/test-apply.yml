@@ -1,0 +1,40 @@
+name: "Terraform Apply"
+
+# Trigger when commits are pushed to the master branch
+on:
+  push:
+    branches:
+      - test
+
+jobs:
+  terraform-plan:
+    name: "Terraform Apply"
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the code
+      # Marketplace: https://github.com/marketplace/actions/checkout
+      - name: "Setup - Checkout"
+        uses: actions/checkout@v2.1.0
+      
+      # Downloads a specific version of Terraform CLI and adds it to PATH
+      # Marketplace: https://github.com/marketplace/actions/hashicorp-setup-terraform
+      - name: "Setup - Terraform CLI"
+        uses: hashicorp/setup-terraform@v1.0.1
+
+      # Init setup modules and providers
+      - name: "Run - Terraform Init"
+        run: |
+          cd test/
+          terraform init -input=false
+
+      # Auto-approve prevents the requirement of human interaction
+      - name: "Run - Terraform Apply"
+        run: |
+          cd test/
+          terraform apply \
+            -var 'environment=dev'
+            -var 'client_id=${{ secrets.ARM_CLIENT_ID }}' \
+            -var 'client_secret=${{ secrets.ARM_CLIENT_SECRET }}' \
+            -var 'tenant_id=${{ secrets.ARM_TENANT_ID }}' \
+            -var 'subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}' \
+            -input=false -auto-approve
